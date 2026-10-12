@@ -1,0 +1,44 @@
+go victorydevice simflags="-P 8 -160"
+
+MESH
+#meshes
+X.MESH loc=0 spacing=0.1
+X.MESH loc=2 spacing=0.1
+X.MESH loc=10 spacing=0.1
+X.MESH loc=95 spacing=0.1
+X.MESH loc=103 spacing=0.1
+X.MESH loc=105 spacing=0.1
+Y.MESH loc=0 spacing=0.1
+Y.MESH loc=1 spacing=0.1
+
+#region
+REGION number=1 material=SiC
+
+#electrodes
+electrode num=1 name=anode left
+electrode num=2 name=cathode right
+
+#doping
+#p+ anode
+doping uniform p.type conc=1e19 x.min=0 x.max=2 y.min=0 y.max=1
+#n- drift
+doping uniform n.type conc=1.82e16 x.min=2 x.max=103 y.min=0 y.max=1
+#n+ cathode
+doping uniform n.type conc=1e19 x.min=103 x.max=105 y.min=0 y.max=1
+
+#models
+material material=SiC taun0=1e-6 taup0=1e-6 zeta=90 theta=0
+models print analytic fldmob srh auger bgn
+impact anisotropic
+output con.band val.band
+
+#reverse breakdown sweep
+solve init
+solve vanode=0
+log outf=silicon_carbide_diode_reverse_smaller.log
+solve vcathode=0 vstep=1 vfinal=9500 name=cathode ionizint ion.crit=1.0
+solve vcathode=1100 vstep=0.1 vfinal=11000 name=cathode ionizint ion.crit=1.0
+log off
+save outf=silicon_carbide_diode_reverse_smaller.str
+victoryvisual silicon_carbide_diode_reverse_smaller.log
+quit

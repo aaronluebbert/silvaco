@@ -21,3 +21,6 @@ core.*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# deckbuild runtime log - can grow to gigabytes
+deckbuild_log*.txt
