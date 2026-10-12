@@ -1,0 +1,55 @@
+go victorydevice simflags="-P 8 -160"
+
+MESH width=10000000000
+#meshes
+Y.MESH loc=0 spacing=0.1
+Y.MESH loc=2 spacing=0.1
+Y.MESH loc=10 spacing=0.1
+Y.MESH loc=95 spacing=0.1
+Y.MESH loc=103 spacing=0.1
+Y.MESH loc=105 spacing=0.1
+X.MESH loc=0 spacing=1
+X.MESH loc=1 spacing=1
+
+#region
+REGION number=1 material=GaN
+
+#electrodes
+electrode num=1 name=anode top
+electrode num=2 name=cathode bottom
+
+#doping
+#p+ anode
+doping uniform p.type conc=1e19 y.min=0 y.max=2 x.min=0 x.max=1
+#n- drift
+doping uniform n.type conc=1.2e14 y.min=2 y.max=103 x.min=0 x.max=1
+#n+ cathode
+doping uniform n.type conc=1e19 y.min=103 y.max=105 x.min=0 x.max=1
+
+#models
+material material=GaN taun0=1e-6 taup0=1e-6 zeta=90 theta=0
+models print analytic fldmob srh auger bgn
+impact anisotropic
+output con.band val.band
+
+#forward sweep
+solve init
+solve vcathode=0
+log outf=gallium_nitride_diode_forward.log
+solve vanode=0   vstep=0.05 vfinal=1.0 name=anode
+solve vanode=1.0 vstep=0.02 vfinal=4.0 name=anode
+log off
+save outf=gallium_nitride_diode.str
+victoryvisual gallium_nitride_diode_forward.log
+
+#reverse breakdown sweep
+solve init
+solve vanode=0
+log outf=gallium_nitride_diode_reverse.log
+solve vcathode=0 vstep=0.1 vfinal=0.9 name=cathode ionizint ion.stop ion.crit=1.0
+solve vcathode=1 vstep=1 vfinal=12499 name=cathode ionizint ion.stop ion.crit=1.0
+solve vcathode=12500 vstep=0.1 vfinal=12999.9 name=cathode ionizint ion.stop ion.crit=1.0
+solve vcathode=13000 vstep=0.01 vfinal=13159.4 name=cathode ionizint ion.stop ion.crit=1.0
+log off
+victoryvisual gallium_nitride_diode_reverse.log
+quit

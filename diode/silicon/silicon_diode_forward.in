@@ -1,0 +1,44 @@
+go victorydevice simflags="-P 8"
+#for 160-bit math, use go victorydevice simflags="-P 8 -160"
+
+MESH
+#meshes
+X.MESH loc=0 spacing=0.1
+X.MESH loc=2 spacing=0.05
+X.MESH loc=10 spacing=1.0
+X.MESH loc=95 spacing=1.0
+X.MESH loc=103 spacing=0.1
+X.MESH loc=105 spacing=0.1
+Y.MESH loc=0 spacing=0.5
+Y.MESH loc=1 spacing=0.5
+
+#region
+REGION number=1 material=silicon
+
+#electrodes
+electrode num=1 name=anode left
+electrode num=2 name=cathode right
+
+#doping
+#p+ anode
+doping uniform p.type conc=1e19 x.min=0 x.max=2 y.min=0 y.max=1
+#n- drift
+doping uniform n.type conc=1.2e14 x.min=2 x.max=103 y.min=0 y.max=1
+#n+ cathode
+doping uniform n.type conc=1e19 x.min=103 x.max=105 y.min=0 y.max=1
+
+#models
+material material=silicon taun0=1e-6 taup0=1e-6
+models print conmob fldmob srh auger bgn
+output con.band val.band
+
+#forward sweep
+solve init
+solve vcathode=0
+log outf=silicon_diode_forward.log
+solve vanode=0   vstep=0.05 vfinal=1.0 name=anode
+solve vanode=1.0 vstep=0.02 vfinal=4.0 name=anode
+log off
+save outf=silicon_diode_forward.str
+victoryvisual silicon_diode_forward.log
+quit
