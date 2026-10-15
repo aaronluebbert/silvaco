@@ -1,0 +1,72 @@
+go victorydevice simflags="-P 8 -160"
+
+# mesh
+MESH
+X.MESH loc=0   spacing=0.2
+X.MESH loc=1.0 spacing=0.1
+X.MESH loc=1.5 spacing=0.1
+X.MESH loc=3.5 spacing=0.1
+X.MESH loc=4.0 spacing=0.1
+X.MESH loc=5.0 spacing=0.2
+Y.MESH loc=-0.6 spacing=0.1
+Y.MESH loc=-0.05 spacing=0.025
+Y.MESH loc=0 spacing=0.005
+Y.MESH loc=0.3 spacing=0.05
+Y.MESH loc=1.0 spacing=0.1
+Y.MESH loc=2.0 spacing=0.3
+Y.MESH loc=10.5 spacing=1
+Y.MESH loc=12.5 spacing=1
+
+# regions
+REGION number=1 material=SiC
+REGION number=2 material=SiO2 y.max=0
+
+# electrodes
+electrode name=gate material=polysilicon x.min=0 x.max=3.8 y.min=-0.55 y.max=-0.05
+electrode name=source material=aluminum x.min=4.2 x.max=5 y.min=-0.6 y.max=0
+electrode name=drain bottom
+
+# drift
+doping uniform n.type conc=1.5e16 x.min=0 x.max=1.5 y.min=0 y.max=1.0
+doping uniform n.type conc=1.5e16 x.min=0 x.max=5 y.min=1.0 y.max=10.5
+# p-base
+doping uniform p.type conc=1e17 x.min=1.5 x.max=5 y.min=0 y.max=1.0
+# n+ source (channel length 2 um)
+doping uniform n.type conc=1e19 x.min=3.5 x.max=4.5 y.min=0 y.max=0.3
+# p+ body contact
+doping uniform p.type conc=1e19 x.min=4.5 x.max=5 y.min=0 y.max=0.5
+# n+ substrate
+doping uniform n.type conc=1e19 x.min=0 x.max=5 y.min=10.5 y.max=12.5
+
+# material
+material material=SiC taun0=1e-6 taup0=1e-6 zeta=0 theta=0
+contact name=gate n.poly
+
+# models
+models print altcvt fldmob srh auger bgn
+output con.band val.band
+
+# solve
+solve init
+solve vdrain=0.1
+log outf=sic_mosfet_transfer.log
+solve vgate=0 vstep=0.25 vfinal=15 name=gate
+log off
+log outf=sic_mosfet_output.log
+solve vdrain=0.15 vstep=0.05 vfinal=3.0 name=drain
+log off
+save outf=sic_mosfet_onstate.str
+victoryvisual sic_mosfet_onstate.str
+
+output con.band val.band
+impact anisotropic
+
+solve init
+solve vgate=0 vdrain=0
+log outf=sic_mosfet_reverse.log
+solve vdrain=0 vstep=5 vfinal=995 name=drain ionizint ion.stop ion.crit=1.0
+solve vdrain=1000 vstep=1 vfinal=3000 name=drain ionizint ion.stop ion.crit=1.0
+log off
+save outf=sic_mosfet_reverse.str
+victoryvisual sic_mosfet_reverse.log
+quit

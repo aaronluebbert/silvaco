@@ -21,3 +21,6 @@ core.*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# deckbuild runtime log
+deckbuild_log*.txt
