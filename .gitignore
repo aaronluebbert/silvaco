@@ -3,6 +3,7 @@
 *.log
 *.out
 *.opt
+*.txt
 
 # deckbuild and editor backups
 *~
