@@ -1,0 +1,190 @@
+go victorydevice simflags="-P 8"
+
+# mesh
+MESH
+X.MESH loc=0    spacing=0.25
+X.MESH loc=7.5  spacing=0.25
+X.MESH loc=8.0  spacing=0.1
+X.MESH loc=10.5 spacing=0.1
+X.MESH loc=11.0 spacing=0.1
+X.MESH loc=12.0 spacing=0.2
+Y.MESH loc=-0.6  spacing=0.1
+Y.MESH loc=-0.05 spacing=0.025
+Y.MESH loc=0     spacing=0.005
+Y.MESH loc=0.3   spacing=0.05
+Y.MESH loc=1.0   spacing=0.1
+Y.MESH loc=3.0   spacing=0.2
+Y.MESH loc=20    spacing=1
+Y.MESH loc=104   spacing=1
+Y.MESH loc=106   spacing=1
+
+# regions
+REGION number=1 material=silicon
+REGION number=2 material=SiO2 y.max=0
+
+# electrodes
+electrode name=gate material=polysilicon x.min=0 x.max=10.3 y.min=-0.55 y.max=-0.05
+electrode name=source material=aluminum x.min=10.7 x.max=12 y.min=-0.6 y.max=0
+electrode name=drain bottom
+
+# doping
+# drift region
+doping uniform n.type conc=1.2e14 x.min=0 x.max=8 y.min=0 y.max=3.0
+doping uniform n.type conc=1.2e14 x.min=0 x.max=12 y.min=3.0 y.max=104
+# p-base
+doping uniform p.type conc=1e17 x.min=8 x.max=12 y.min=0 y.max=3.0
+# n+ source
+doping uniform n.type conc=1e19 x.min=10 x.max=11 y.min=0 y.max=0.3
+# p+ body contact
+doping uniform p.type conc=1e19 x.min=11 x.max=12 y.min=0 y.max=0.5
+# n+ substrate
+doping uniform n.type conc=1e19 x.min=0 x.max=12 y.min=104 y.max=106
+material material=silicon taun0=1e-6 taup0=1e-6
+contact name=gate n.poly
+models print cvt srh auger bgn
+impact selb
+output con.band val.band
+
+# transfer curve
+solve init
+solve vdrain=0.1
+log outf=si_mosfet_transfer.log
+solve vgate=0 vstep=0.25 vfinal=20 name=gate
+log off
+save outf=si_mosfet_transfer.str
+victoryvisual si_mosfet_transfer.log
+
+# output family
+solve init
+solve vdrain=0
+# vg = 2 v
+solve vgate=2
+log outf=si_mosfet_output_vg02.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4 v
+solve vgate=4
+log outf=si_mosfet_output_vg04.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 6 v
+solve vgate=6
+log outf=si_mosfet_output_vg06.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 8 v
+solve vgate=8
+log outf=si_mosfet_output_vg08.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 10 v
+solve vgate=10
+log outf=si_mosfet_output_vg10.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 12 v
+solve vgate=12
+log outf=si_mosfet_output_vg12.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 14 v
+solve vgate=14
+log outf=si_mosfet_output_vg14.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 16 v
+solve vgate=16
+log outf=si_mosfet_output_vg16.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 18 v
+solve vgate=18
+log outf=si_mosfet_output_vg18.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 20 v
+solve vgate=20
+log outf=si_mosfet_output_vg20.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+save outf=si_mosfet_family.str
+victoryvisual si_mosfet_family.str
+
+# reverse blocking
+solve init
+solve vgate=0 vdrain=0
+log outf=si_mosfet_reverse.log
+solve vdrain=0 vstep=1 vfinal=1049 name=drain ionizint ion.stop ion.crit=1.0
+solve vdrain=1050 vstep=0.1 vfinal=1134.4 name=drain ionizint ion.stop ion.crit=1.0
+log off
+save outf=si_mosfet_reverse.str
+victoryvisual si_mosfet_reverse.log
+
+# near-threshold output family
+solve init
+solve vdrain=0
+# vg = 2.5 v
+solve vgate=2.5
+log outf=si_mosfet_nt_vg2p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 2.75 v
+solve vgate=2.75
+log outf=si_mosfet_nt_vg2p75.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.0 v
+solve vgate=3.0
+log outf=si_mosfet_nt_vg3p00.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.25 v
+solve vgate=3.25
+log outf=si_mosfet_nt_vg3p25.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.5 v
+solve vgate=3.5
+log outf=si_mosfet_nt_vg3p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.75 v
+solve vgate=3.75
+log outf=si_mosfet_nt_vg3p75.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.0 v
+solve vgate=4.0
+log outf=si_mosfet_nt_vg4p00.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.25 v
+solve vgate=4.25
+log outf=si_mosfet_nt_vg4p25.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.5 v
+solve vgate=4.5
+log outf=si_mosfet_nt_vg4p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+save outf=si_mosfet_nt_family.str
+victoryvisual si_mosfet_nt_family.str
+quit
