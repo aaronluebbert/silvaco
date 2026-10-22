@@ -1,7 +1,7 @@
 go victorydevice simflags="-P 8"
 
 # mesh
-MESH
+MESH WIDTH=8333333
 X.MESH loc=0    spacing=0.25
 X.MESH loc=7.5  spacing=0.25
 X.MESH loc=8.0  spacing=0.1
