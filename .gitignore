@@ -25,3 +25,7 @@ desktop.ini
 
 # deckbuild runtime log
 deckbuild_log*.txt
+
+# deckbuild runtime directories - hidden per-deck folders holding huge rto.xml dumps
+**/deckbuild/
+rto.xml
