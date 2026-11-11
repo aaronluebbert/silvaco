@@ -13,7 +13,7 @@ Y.MESH loc=-0.05 spacing=0.025
 Y.MESH loc=0     spacing=0.005
 Y.MESH loc=0.3   spacing=0.05
 Y.MESH loc=1.0   spacing=0.1
-Y.MESH loc=3.0   spacing=0.2
+Y.MESH loc=3.0   spacing=0.1
 Y.MESH loc=20    spacing=1
 Y.MESH loc=104   spacing=1
 Y.MESH loc=106   spacing=1
@@ -115,6 +115,7 @@ solve vdrain=59 vstep=-1 vfinal=0 name=drain
 solve vgate=20
 log outf=si_mosfet_output_vg20.log
 solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+save outf=si_mosfet_family_during_solve.str
 log off
 save outf=si_mosfet_family.str
 victoryvisual si_mosfet_family.str
