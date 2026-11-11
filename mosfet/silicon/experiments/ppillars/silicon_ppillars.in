@@ -1,0 +1,97 @@
+go victorydevice simflags="-P 8"
+
+# experiment - superjunction (p-pillar) vd-mosfet in silicon
+# same top cell as ../../silicon.in shifted left by 4 um, with a charge-balanced
+# p-pillar under the p-base and an n-pillar under the gate
+# half cell is 8 um wide so MESH WIDTH=12500000 um gives 1 cm2 of area
+#
+# charge balance - nd * wn = na * wp
+#   pillars are 8 um wide each (full width, mirrored at x=0 and x=8)
+#   so the net doping of the two pillars must match, both are 1.2e15
+# knobs to turn if the run misses 1200 v
+#   pillar depth (y=3 to y=58) sets breakdown, deeper = higher bv and higher ron
+#   pillar doping sets ron and the lateral field, change both pillars together
+#   buffer under the pillars tapers the field at the bottom
+# hand estimate is about 0.05 ohm cm2 for ron and about 1.2 kv for bv
+# expect the output curve to saturate around 15 to 25 v as the n-pillar pinches off
+# so take ron from the low vds slope, not from the 100 a/cm2 point
+
+# mesh
+MESH WIDTH=12500000
+X.MESH loc=0    spacing=0.2
+X.MESH loc=3.5  spacing=0.2
+X.MESH loc=4.0  spacing=0.1
+X.MESH loc=6.5  spacing=0.1
+X.MESH loc=7.0  spacing=0.1
+X.MESH loc=8.0  spacing=0.2
+Y.MESH loc=-0.6  spacing=0.1
+Y.MESH loc=-0.05 spacing=0.025
+Y.MESH loc=0     spacing=0.005
+Y.MESH loc=0.3   spacing=0.05
+Y.MESH loc=1.0   spacing=0.1
+Y.MESH loc=3.0   spacing=0.1
+Y.MESH loc=20    spacing=1
+Y.MESH loc=58    spacing=1
+Y.MESH loc=66    spacing=1
+Y.MESH loc=68    spacing=1
+
+# regions
+REGION number=1 material=silicon
+REGION number=2 material=SiO2 y.max=0
+
+# electrodes
+electrode name=gate material=polysilicon x.min=0 x.max=6.3 y.min=-0.55 y.max=-0.05
+electrode name=source material=aluminum x.min=6.7 x.max=8 y.min=-0.6 y.max=0
+electrode name=drain bottom
+
+# doping
+# n background, this is the n-pillar
+doping uniform n.type conc=1.2e15 x.min=0 x.max=8 y.min=0 y.max=58
+# n- buffer under the pillars
+doping uniform n.type conc=6e14 x.min=0 x.max=8 y.min=58 y.max=66
+# p-pillar, 2.4e15 minus the 1.2e15 n background leaves net 1.2e15 p
+doping uniform p.type conc=2.4e15 x.min=4 x.max=8 y.min=3.0 y.max=58
+# p-base
+doping uniform p.type conc=1e17 x.min=4 x.max=8 y.min=0 y.max=3.0
+# n+ source
+doping uniform n.type conc=1e19 x.min=6 x.max=7 y.min=0 y.max=0.3
+# p+ body contact
+doping uniform p.type conc=1e19 x.min=7 x.max=8 y.min=0 y.max=0.5
+# n+ substrate
+doping uniform n.type conc=1e19 x.min=0 x.max=8 y.min=66 y.max=68
+material material=silicon taun0=1e-6 taup0=1e-6
+contact name=gate n.poly
+models print cvt srh auger bgn
+impact selb
+output con.band val.band
+
+# transfer curve
+solve init
+solve vdrain=0.1
+log outf=sj_transfer.log
+solve vgate=0 vstep=0.25 vfinal=20 name=gate
+log off
+save outf=sj_transfer.str
+victoryvisual sj_transfer.log
+
+# on-state output at vg = 20 v, fine steps at low vds for the ron slope
+solve init
+solve vdrain=0
+solve vgate=20
+log outf=sj_output_vg20.log
+solve vdrain=0.1 vstep=0.1 vfinal=5 name=drain
+solve vdrain=6 vstep=1 vfinal=60 name=drain
+log off
+save outf=sj_output_vg20.str
+victoryvisual sj_output_vg20.log
+
+# reverse blocking, one ramp because the breakdown voltage is not known yet
+# ion.stop ends the ramp when the ionization integral reaches 1
+solve init
+solve vgate=0 vdrain=0
+log outf=sj_reverse.log
+solve vdrain=0 vstep=1 vfinal=1700 name=drain ionizint ion.stop ion.crit=1.0
+log off
+save outf=sj_reverse.str
+victoryvisual sj_reverse.log
+quit

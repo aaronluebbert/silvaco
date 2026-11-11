@@ -28,11 +28,12 @@ electrode name=source material=aluminum x.min=10.7 x.max=12 y.min=-0.6 y.max=0
 electrode name=drain bottom
 
 # doping
-# drift region
-doping uniform n.type conc=1.2e14 x.min=0 x.max=8 y.min=0 y.max=3.0
-doping uniform n.type conc=1.2e14 x.min=0 x.max=12 y.min=3.0 y.max=104
-# p-base
-doping uniform p.type conc=1e17 x.min=8 x.max=12 y.min=0 y.max=3.0
+# drift region, one uniform background under the whole cell
+doping uniform n.type conc=1.2e14 x.min=0 x.max=12 y.min=0 y.max=104
+# p-base with a gaussian roll-off so the junction corner is rounded instead of a sharp box corner
+# the roll-off reaches the drift doping 3.67 sigma outside the box (sigma = 0.5 um, so 1.83 um)
+# so the plateau box is pulled in by that much and the metallurgical junction stays at x=8 and y=3
+doping gaussian p.type conc=1e17 x.min=9.83 x.max=12 y.min=0 y.max=1.17 xn.characteristic=0.5 yp.characteristic=0.5
 # n+ source
 doping uniform n.type conc=1e19 x.min=10 x.max=11 y.min=0 y.max=0.3
 # p+ body contact
@@ -115,7 +116,6 @@ solve vdrain=59 vstep=-1 vfinal=0 name=drain
 solve vgate=20
 log outf=si_mosfet_output_vg20.log
 solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
-save outf=si_mosfet_family_during_solve.str
 log off
 save outf=si_mosfet_family.str
 victoryvisual si_mosfet_family.str
@@ -124,8 +124,9 @@ victoryvisual si_mosfet_family.str
 solve init
 solve vgate=0 vdrain=0
 log outf=si_mosfet_reverse.log
-solve vdrain=0 vstep=1 vfinal=1049 name=drain ionizint ion.stop ion.crit=1.0
-solve vdrain=1050 vstep=0.1 vfinal=1134.4 name=drain ionizint ion.stop ion.crit=1.0
+# ion.stop ends the ramp at breakdown so the second ramp is allowed to overshoot
+solve vdrain=0 vstep=1 vfinal=1099 name=drain ionizint ion.stop ion.crit=1.0
+solve vdrain=1100 vstep=0.2 vfinal=1300 name=drain ionizint ion.stop ion.crit=1.0
 log off
 save outf=si_mosfet_reverse.str
 victoryvisual si_mosfet_reverse.log
