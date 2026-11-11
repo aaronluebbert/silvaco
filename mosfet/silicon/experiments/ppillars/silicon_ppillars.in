@@ -77,7 +77,8 @@ victoryvisual sj_transfer.log
 # on-state output at vg = 20 v, fine steps at low vds for the ron slope
 solve init
 solve vdrain=0
-solve vgate=20
+solve vgate=0 vstep=1 vfinal=20 name=gate
+log outf=sj_output_vg20.log
 log outf=sj_output_vg20.log
 solve vdrain=0.1 vstep=0.1 vfinal=5 name=drain
 solve vdrain=6 vstep=1 vfinal=60 name=drain
