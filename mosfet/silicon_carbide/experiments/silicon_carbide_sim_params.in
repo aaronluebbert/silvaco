@@ -39,19 +39,7 @@ doping uniform n.type conc=1.2e14 x.min=0 x.max=12 y.min=0 y.max=104
 doping gaussian p.type conc=1e17 x.min=9.83 x.max=12 y.min=0 y.max=1.17 xn.characteristic=0.5 yp.characteristic=0.5
 # n+ source
 doping uniform n.type conc=1e19 x.min=10 x.max=11 y.min=0 y.max=0.3
-# p+ body contactGood evening, Dr. Bilbao!
-
-Sorry I haven't been around much. I've been working from home lately since that has worked better for me, and here is where I'm at:
-
-For the Si 1200 V MOSFET, the on-resistance was at 0.40 ohm-cm^2. Trying to lower it, I rounded the p-base junction by changing its doping to a Gaussian profile, but that only changed the resistance to 0.39 ohm-cm^2.
-
-I also tried a superjunction variant with p-doped pillars. I got 0.061 ohm-cm^2, and it breaks down at 1.11 kV. I plan to deepen the pillars to reach 1200 V, which should raise the resistance slightly. Since this changes the drift from a standard VD-MOSFET, I would appreciate your feedback on whether it is the right route for me to go.
-
-I've also been experimenting with a SiC variant with the same geometry and doping in parallel with the Si sims, but I don't have polished results yet.
-
-Thank you very much, I would appreciate your feedback!
-
-Aaron
+# p+ body contact
 doping uniform p.type conc=1e19 x.min=11 x.max=12 y.min=0 y.max=0.5
 # n+ substrate
 doping uniform n.type conc=1e19 x.min=0 x.max=12 y.min=104 y.max=106
