@@ -1,0 +1,91 @@
+# experiment - jfet implant variant of ../../silicon.in
+# only change is the n-type implant in the jfet neck, everything else is identical
+# why - tests whether the jfet neck is where resistance is lost
+# how to read the result
+#   ron at low vds should barely move, the neck is only about 3 percent of the drift thickness
+#   if the bend above 40 v also stays, it is velocity saturation in the drift and not the neck
+#   breakdown can drop, the implant adds charge right where the field peaks
+# logs are named si_jfet_* so they do not overwrite the baseline logs
+
+go victorydevice simflags="-P 8"
+
+# mesh
+MESH WIDTH=8333333
+X.MESH loc=0    spacing=0.25
+X.MESH loc=7.5  spacing=0.25
+X.MESH loc=8.0  spacing=0.1
+X.MESH loc=10.5 spacing=0.1
+X.MESH loc=11.0 spacing=0.1
+X.MESH loc=12.0 spacing=0.2
+Y.MESH loc=-0.6  spacing=0.1
+Y.MESH loc=-0.05 spacing=0.025
+Y.MESH loc=0     spacing=0.005
+Y.MESH loc=0.3   spacing=0.05
+Y.MESH loc=1.0   spacing=0.1
+Y.MESH loc=3.0   spacing=0.1
+Y.MESH loc=20    spacing=1
+Y.MESH loc=104   spacing=1
+Y.MESH loc=106   spacing=1
+
+# regions
+REGION number=1 material=silicon
+REGION number=2 material=SiO2 y.max=0
+
+# electrodes
+electrode name=gate material=polysilicon x.min=0 x.max=10.3 y.min=-0.55 y.max=-0.05
+electrode name=source material=aluminum x.min=10.7 x.max=12 y.min=-0.6 y.max=0
+electrode name=drain bottom
+
+# doping
+# drift region, one uniform background under the whole cell
+doping uniform n.type conc=1.2e14 x.min=0 x.max=12 y.min=0 y.max=104
+# jfet implant - extra n-type in the neck between the p-bases, same depth as the base
+# net jfet doping is 1.2e14 + 5e14 = 6.2e14, it ends at x=8 where the p-base junction sits
+doping uniform n.type conc=5e14 x.min=0 x.max=8 y.min=0 y.max=3.0
+# p-base with a gaussian roll-off so the junction corner is rounded instead of a sharp box corner
+# the roll-off reaches the drift doping 3.67 sigma outside the box (sigma = 0.5 um, so 1.83 um)
+# so the plateau box is pulled in by that much and the metallurgical junction stays at x=8 and y=3
+doping gaussian p.type conc=1e17 x.min=9.83 x.max=12 y.min=0 y.max=1.17 xn.characteristic=0.5 yp.characteristic=0.5
+# n+ source
+doping uniform n.type conc=1e19 x.min=10 x.max=11 y.min=0 y.max=0.3
+# p+ body contact
+doping uniform p.type conc=1e19 x.min=11 x.max=12 y.min=0 y.max=0.5
+# n+ substrate
+doping uniform n.type conc=1e19 x.min=0 x.max=12 y.min=104 y.max=106
+material material=silicon taun0=1e-6 taup0=1e-6
+contact name=gate n.poly
+models print cvt srh auger bgn
+impact selb
+output con.band val.band
+
+# transfer curve
+solve init
+solve vdrain=0.1
+log outf=si_jfet_transfer.log
+solve vgate=0 vstep=0.25 vfinal=20 name=gate
+log off
+save outf=si_jfet_transfer.str
+victoryvisual si_jfet_transfer.log
+
+# on-state output at vg = 20 v, same drain steps as the baseline for a like for like ron
+solve init
+solve vdrain=0
+# ramp the gate up in steps, a single 20 v jump can fail to converge
+solve vgate=0 vstep=2 vfinal=20 name=gate
+log outf=si_jfet_output_vg20.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+save outf=si_jfet_output_vg20.str
+victoryvisual si_jfet_output_vg20.log
+
+# reverse blocking
+solve init
+solve vgate=0 vdrain=0
+log outf=si_jfet_reverse.log
+# ion.stop ends the ramp at breakdown so the second ramp is allowed to overshoot
+solve vdrain=0 vstep=1 vfinal=1099 name=drain ionizint ion.stop ion.crit=1.0
+solve vdrain=1100 vstep=0.2 vfinal=1300 name=drain ionizint ion.stop ion.crit=1.0
+log off
+save outf=si_jfet_reverse.str
+victoryvisual si_jfet_reverse.log
+quit
