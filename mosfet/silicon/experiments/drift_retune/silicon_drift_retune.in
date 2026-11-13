@@ -1,0 +1,203 @@
+# experiment - re-optimized drift for lower resistance, otherwise identical to ../../silicon.in
+# drift is 1.43e14 over 81.5 um instead of 1.2e14 over 101 um
+# these are the hand optimum for exactly 1200 v from the reach-through formula
+#   bv = ec * w - q * nd * w^2 / (2 * es) with ec = 4010 * nd^(1/8)
+# hand estimate for the drift alone is about 0.264 ohm cm2 versus 0.389 for the baseline
+# warning - the baseline broke down about 19 percent under its own hand formula
+# so this drift may only reach about 1000 v in the simulator, the reverse run will say
+# the base, source and gate are unchanged, the substrate moved up with the thinner drift
+# logs are named si_drift_* so they do not overwrite the baseline logs
+# full suite - transfer, output family, reverse, near-threshold family
+
+go victorydevice simflags="-P 8"
+
+# mesh
+MESH WIDTH=8333333
+X.MESH loc=0    spacing=0.25
+X.MESH loc=7.5  spacing=0.25
+X.MESH loc=8.0  spacing=0.1
+X.MESH loc=10.5 spacing=0.1
+X.MESH loc=11.0 spacing=0.1
+X.MESH loc=12.0 spacing=0.2
+Y.MESH loc=-0.6  spacing=0.1
+Y.MESH loc=-0.05 spacing=0.025
+Y.MESH loc=0     spacing=0.005
+Y.MESH loc=0.3   spacing=0.05
+Y.MESH loc=1.0   spacing=0.1
+Y.MESH loc=3.0   spacing=0.1
+Y.MESH loc=20    spacing=1
+Y.MESH loc=84.5  spacing=1
+Y.MESH loc=86.5  spacing=1
+
+# regions
+REGION number=1 material=silicon
+REGION number=2 material=SiO2 y.max=0
+
+# electrodes
+electrode name=gate material=polysilicon x.min=0 x.max=10.3 y.min=-0.55 y.max=-0.05
+electrode name=source material=aluminum x.min=10.7 x.max=12 y.min=-0.6 y.max=0
+electrode name=drain bottom
+
+# doping
+# drift region, one uniform background under the whole cell
+doping uniform n.type conc=1.43e14 x.min=0 x.max=12 y.min=0 y.max=84.5
+# p-base with a gaussian roll-off so the junction corner is rounded instead of a sharp box corner
+# the roll-off reaches the drift doping 3.67 sigma outside the box (sigma = 0.5 um, so 1.83 um)
+# so the plateau box is pulled in by that much and the metallurgical junction stays at x=8 and y=3
+doping gaussian p.type conc=1e17 x.min=9.83 x.max=12 y.min=0 y.max=1.17 xn.characteristic=0.5 yp.characteristic=0.5
+# n+ source
+doping uniform n.type conc=1e19 x.min=10 x.max=11 y.min=0 y.max=0.3
+# p+ body contact
+doping uniform p.type conc=1e19 x.min=11 x.max=12 y.min=0 y.max=0.5
+# n+ substrate
+doping uniform n.type conc=1e19 x.min=0 x.max=12 y.min=84.5 y.max=86.5
+material material=silicon taun0=1e-6 taup0=1e-6
+contact name=gate n.poly
+models print cvt srh auger bgn
+impact selb
+output con.band val.band
+
+# transfer curve
+solve init
+solve vdrain=0.1
+log outf=si_drift_transfer.log
+solve vgate=0 vstep=0.25 vfinal=20 name=gate
+log off
+save outf=si_drift_transfer.str
+victoryvisual si_drift_transfer.log
+
+# output family
+solve init
+solve vdrain=0
+# vg = 2 v
+solve vgate=2
+log outf=si_drift_output_vg02.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4 v
+solve vgate=4
+log outf=si_drift_output_vg04.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 6 v
+solve vgate=6
+log outf=si_drift_output_vg06.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 8 v
+solve vgate=8
+log outf=si_drift_output_vg08.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 10 v
+solve vgate=10
+log outf=si_drift_output_vg10.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 12 v
+solve vgate=12
+log outf=si_drift_output_vg12.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 14 v
+solve vgate=14
+log outf=si_drift_output_vg14.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 16 v
+solve vgate=16
+log outf=si_drift_output_vg16.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 18 v
+solve vgate=18
+log outf=si_drift_output_vg18.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 20 v
+solve vgate=20
+log outf=si_drift_output_vg20.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+save outf=si_drift_family.str
+victoryvisual si_drift_family.str
+
+# reverse blocking
+solve init
+solve vgate=0 vdrain=0
+log outf=si_drift_reverse.log
+# ion.stop ends the ramp at breakdown so the second ramp is allowed to overshoot
+solve vdrain=0 vstep=1 vfinal=849 name=drain ionizint ion.stop ion.crit=1.0
+solve vdrain=850 vstep=0.2 vfinal=1300 name=drain ionizint ion.stop ion.crit=1.0
+log off
+save outf=si_drift_reverse.str
+victoryvisual si_drift_reverse.log
+
+# near-threshold output family
+solve init
+solve vdrain=0
+# vg = 2.5 v
+solve vgate=2.5
+log outf=si_drift_nt_vg2p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 2.75 v
+solve vgate=2.75
+log outf=si_drift_nt_vg2p75.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.0 v
+solve vgate=3.0
+log outf=si_drift_nt_vg3p00.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.25 v
+solve vgate=3.25
+log outf=si_drift_nt_vg3p25.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.5 v
+solve vgate=3.5
+log outf=si_drift_nt_vg3p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 3.75 v
+solve vgate=3.75
+log outf=si_drift_nt_vg3p75.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.0 v
+solve vgate=4.0
+log outf=si_drift_nt_vg4p00.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.25 v
+solve vgate=4.25
+log outf=si_drift_nt_vg4p25.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+solve vdrain=59 vstep=-1 vfinal=0 name=drain
+# vg = 4.5 v
+solve vgate=4.5
+log outf=si_drift_nt_vg4p50.log
+solve vdrain=0.5 vstep=0.5 vfinal=60 name=drain
+log off
+save outf=si_drift_nt_family.str
+victoryvisual si_drift_nt_family.str
+quit
